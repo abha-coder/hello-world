@@ -1,0 +1,10 @@
+{
+  "name": "AbleCode AI",
+  "short_name": "AbleCode AI",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#111827",
+  "description": "An AI-powered accessible software development environment.",
+  "icons": []
+}
