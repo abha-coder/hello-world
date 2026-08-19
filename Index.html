@@ -1,0 +1,1258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="AbleCode AI">
+  <title>AbleCode AI</title>
+
+  <style>
+    :root {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg: #0b1020;
+      --panel: #121a2b;
+      --panel2: #182238;
+      --text: #f5f7fb;
+      --muted: #b8c2d6;
+      --border: #34415c;
+      --accent: #8ab4ff;
+      --focus: #ffd166;
+      --danger: #ff9b9b;
+      --success: #8fe3b0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    button,
+    a,
+    textarea {
+      font: inherit;
+    }
+
+    button,
+    .nav-link {
+      min-height: 48px;
+      padding: 0.7rem 0.9rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    a:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    header {
+      padding: 1rem;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .tagline {
+      margin: 0.25rem 0 0;
+      color: var(--muted);
+    }
+
+    nav {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .nav-link {
+      display: inline-block;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nav-link[aria-current="page"] {
+      background: var(--accent);
+      color: #061126;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: auto;
+      padding: 1rem;
+    }
+
+    .view[hidden] {
+      display: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      gap: 1rem;
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+    }
+
+    .files button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 0.5rem;
+    }
+
+    .files button[aria-current="true"] {
+      border-color: var(--accent);
+    }
+
+    textarea {
+      width: 100%;
+      padding: 1rem;
+      background: #070b14;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      resize: vertical;
+    }
+
+    #code {
+      min-height: 400px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      line-height: 1.55;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .status {
+      min-height: 1.5rem;
+      color: var(--muted);
+    }
+
+    .messages {
+      min-height: 250px;
+      max-height: 500px;
+      overflow: auto;
+    }
+
+    .message {
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .message strong {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    iframe {
+      width: 100%;
+      min-height: 350px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+    }
+
+    .error {
+      color: var(--danger);
+    }
+
+    .success {
+      color: var(--success);
+    }
+
+    @media (max-width: 750px) {
+      .grid,
+      .two-column {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        padding: 0.7rem;
+      }
+
+      #code {
+        min-height: 300px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>AbleCode AI</h1>
+  <p class="tagline">Build software. Accessibility built in.</p>
+</header>
+
+<nav aria-label="Primary navigation">
+  <a class="nav-link" href="#code" data-view="code" aria-current="page">
+    Code View
+  </a>
+
+  <a class="nav-link" href="#ai" data-view="ai">
+    AI View
+  </a>
+
+  <a class="nav-link" href="#debug" data-view="debug">
+    Debugger
+  </a>
+</nav>
+
+<main>
+
+<section id="view-code" class="view" aria-labelledby="code-heading">
+
+  <h2 id="code-heading" tabindex="-1">
+    Code View
+  </h2>
+
+  <div class="grid">
+
+    <aside class="card files" aria-labelledby="files-heading">
+
+      <h3 id="files-heading">
+        Project files
+      </h3>
+
+      <button class="file-button"
+              data-file="index.html"
+              aria-current="true">
+        index.html
+      </button>
+
+      <button class="file-button"
+              data-file="app.js"
+              aria-current="false">
+        app.js
+      </button>
+
+      <button class="file-button"
+              data-file="styles.css"
+              aria-current="false">
+        styles.css
+      </button>
+
+    </aside>
+
+    <div class="card">
+
+      <label for="code">
+        <strong id="current-file">index.html</strong>
+        editor
+      </label>
+
+      <textarea id="code"
+                spellcheck="false"
+                aria-describedby="editor-help"></textarea>
+
+      <p id="editor-help">
+        Write or edit your code here.
+      </p>
+
+      <div class="toolbar">
+
+        <button id="save">
+          Save
+        </button>
+
+        <button id="run">
+          Run Preview
+        </button>
+
+        <button id="copy">
+          Copy Code
+        </button>
+
+        <button id="download">
+          Download Code
+        </button>
+
+      </div>
+
+      <p id="code-status"
+         class="status"
+         role="status"
+         aria-live="polite"></p>
+
+    </div>
+
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+
+    <h3>
+      Live Preview
+    </h3>
+
+    <iframe id="preview"
+            title="Live application preview"
+            sandbox="allow-scripts"></iframe>
+
+  </div>
+
+</section>
+
+
+<section id="view-ai"
+         class="view"
+         hidden
+         aria-labelledby="ai-heading">
+
+  <h2 id="ai-heading" tabindex="-1">
+    AI View
+  </h2>
+
+  <div class="two-column">
+
+    <div class="card">
+
+      <label for="prompt">
+        <strong>
+          Tell AbleCode AI what you want to build
+        </strong>
+      </label>
+
+      <textarea id="prompt"
+                rows="8"
+                placeholder="Describe your software idea."></textarea>
+
+      <div class="toolbar">
+
+        <button id="dictate"
+                aria-pressed="false">
+          Start Dictation
+        </button>
+
+        <button id="stop-dictation"
+                disabled>
+          Stop Dictation
+        </button>
+
+        <button id="generate">
+          Generate Accessible Code
+        </button>
+
+        <button id="explain">
+          Explain Code
+        </button>
+
+      </div>
+
+      <p id="voice-status"
+         class="status"
+         role="status"
+         aria-live="polite"></p>
+
+    </div>
+
+    <div class="card">
+
+      <h3>
+        AI Conversation
+      </h3>
+
+      <div id="messages"
+           class="messages"
+           role="log"
+           aria-live="polite">
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<section id="view-debug"
+         class="view"
+         hidden
+         aria-labelledby="debug-heading">
+
+  <h2 id="debug-heading" tabindex="-1">
+    Debugger
+  </h2>
+
+  <div class="card">
+
+    <p>
+      Run the project and inspect errors.
+    </p>
+
+    <div class="toolbar">
+
+      <button id="debug-run">
+        Run and Capture Errors
+      </button>
+
+      <button id="debug-explain">
+        Explain Latest Error
+      </button>
+
+      <button id="debug-fix">
+        Suggest Fix
+      </button>
+
+    </div>
+
+    <div id="debug-output"
+         role="region"
+         aria-label="Debugger output"
+         aria-live="polite">
+    </div>
+
+  </div>
+
+</section>
+
+</main>
+
+
+<script>
+
+"use strict";
+
+const files = {
+
+  "index.html": `<!doctype html>
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>My Accessible App</title>
+
+</head>
+
+<body>
+
+<main>
+
+<h1>
+My Accessible App
+</h1>
+
+<p>
+Start building here.
+</p>
+
+<button
+type="button"
+id="hello">
+Say hello
+</button>
+
+<p
+id="message"
+role="status"
+aria-live="polite">
+</p>
+
+</main>
+
+<script src="app.js"><\/script>
+
+</body>
+
+</html>`,
+
+  "app.js": `document
+.getElementById("hello")
+.addEventListener("click", function () {
+
+  document
+  .getElementById("message")
+  .textContent =
+  "Hello from AbleCode AI!";
+
+});`,
+
+  "styles.css": `body {
+  font-family: system-ui, sans-serif;
+  margin: 2rem;
+  line-height: 1.5;
+}`
+
+};
+
+let currentFile = "index.html";
+let latestError = "";
+let recognition = null;
+let dictating = false;
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+function announce(id, message) {
+  const element = $(id);
+
+  if (element) {
+    element.textContent = message;
+  }
+}
+
+function loadFile(name) {
+
+  currentFile = name;
+
+  $("current-file").textContent = name;
+
+  $("code").value = files[name];
+
+  document
+    .querySelectorAll(".file-button")
+    .forEach(function(button) {
+
+      button.setAttribute(
+        "aria-current",
+        String(button.dataset.file === name)
+      );
+
+    });
+
+  $("code").focus();
+}
+
+function saveFile() {
+
+  files[currentFile] =
+    $("code").value;
+
+  announce(
+    "code-status",
+    currentFile + " saved."
+  );
+
+}
+
+function buildDocument() {
+
+  files["index.html"] =
+    $("code").value;
+
+  let html =
+    files["index.html"];
+
+  if (!html.includes("styles.css")) {
+
+    html = html.replace(
+      "</head>",
+      "<style>" +
+      files["styles.css"] +
+      "</style></head>"
+    );
+
+  }
+
+  if (!html.includes("app.js")) {
+
+    html = html.replace(
+      "</body>",
+      "<script>" +
+      files["app.js"] +
+      "<\/script></body>"
+    );
+
+  }
+
+  return html;
+}
+
+function runPreview() {
+
+  saveFile();
+
+  $("preview").srcdoc =
+    buildDocument();
+
+  announce(
+    "code-status",
+    "Preview updated."
+  );
+
+}
+
+function showView(
+  view,
+  moveFocus = true
+) {
+
+  if (
+    view !== "code" &&
+    view !== "ai" &&
+    view !== "debug"
+  ) {
+    view = "code";
+  }
+
+  document
+    .querySelectorAll(".view")
+    .forEach(function(section) {
+
+      section.hidden = true;
+
+    });
+
+  $("view-" + view).hidden = false;
+
+  document
+    .querySelectorAll(".nav-link")
+    .forEach(function(link) {
+
+      link.setAttribute(
+        "aria-current",
+        String(link.dataset.view === view)
+      );
+
+    });
+
+  if (moveFocus) {
+
+    const heading =
+      view === "code"
+        ? $("code-heading")
+        : view === "ai"
+        ? $("ai-heading")
+        : $("debug-heading");
+
+    heading.focus();
+
+  }
+
+}
+
+document
+  .querySelectorAll(".nav-link")
+  .forEach(function(link) {
+
+    link.addEventListener(
+      "click",
+      function() {
+
+        showView(
+          link.dataset.view
+        );
+
+      }
+    );
+
+  });
+
+window.addEventListener(
+  "hashchange",
+  function() {
+
+    showView(
+      location.hash.substring(1),
+      false
+    );
+
+  }
+);
+
+showView(
+  location.hash
+    ? location.hash.substring(1)
+    : "code",
+  false
+);
+
+document
+  .querySelectorAll(".file-button")
+  .forEach(function(button) {
+
+    button.addEventListener(
+      "click",
+      function() {
+
+        loadFile(
+          button.dataset.file
+        );
+
+      }
+    );
+
+  });
+
+$("save").addEventListener(
+  "click",
+  saveFile
+);
+
+$("run").addEventListener(
+  "click",
+  runPreview
+);
+
+$("copy").addEventListener(
+  "click",
+  async function() {
+
+    try {
+
+      await navigator.clipboard.writeText(
+        $("code").value
+      );
+
+      announce(
+        "code-status",
+        "Code copied to clipboard."
+      );
+
+    } catch (error) {
+
+      announce(
+        "code-status",
+        "Copy is not available in this browser."
+      );
+
+    }
+
+  }
+);
+
+$("download").addEventListener(
+  "click",
+  function() {
+
+    const blob =
+      new Blob(
+        [$("code").value],
+        {type:"text/plain"}
+      );
+
+    const link =
+      document.createElement("a");
+
+    link.href =
+      URL.createObjectURL(blob);
+
+    link.download =
+      currentFile;
+
+    link.click();
+
+    setTimeout(
+      function() {
+
+        URL.revokeObjectURL(
+          link.href
+        );
+
+      },
+      1000
+    );
+
+  }
+);
+
+function generateTemplate(prompt) {
+
+  const safePrompt =
+    prompt.replace(
+      /[<>]/g,
+      ""
+    );
+
+  return `<!doctype html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>Accessible App</title>
+
+</head>
+
+<body>
+
+<main>
+
+<h1>
+Accessible Feature
+</h1>
+
+<p>
+${safePrompt}
+</p>
+
+<button type="button">
+Primary action
+</button>
+
+<p
+role="status"
+aria-live="polite">
+</p>
+
+</main>
+
+</body>
+
+</html>`;
+
+}
+
+$("generate").addEventListener(
+  "click",
+  function() {
+
+    const prompt =
+      $("prompt").value.trim();
+
+    if (!prompt) {
+
+      announce(
+        "voice-status",
+        "Please enter an idea first."
+      );
+
+      $("prompt").focus();
+
+      return;
+    }
+
+    files["index.html"] =
+      generateTemplate(prompt);
+
+    loadFile(
+      "index.html"
+    );
+
+    runPreview();
+
+    addMessage(
+      "You",
+      prompt
+    );
+
+    addMessage(
+      "AbleCode AI",
+      "Accessible code generated. Open Code View to edit it."
+    );
+
+    announce(
+      "voice-status",
+      "Accessible code generated."
+    );
+
+  }
+);
+
+$("explain").addEventListener(
+  "click",
+  function() {
+
+    addMessage(
+      "AbleCode AI",
+      "The code uses semantic HTML, labels, keyboard-operable controls, live regions and logical focus."
+    );
+
+  }
+);
+
+function addMessage(
+  role,
+  text
+) {
+
+  const message =
+    document.createElement("div");
+
+  message.className =
+    "message";
+
+  const title =
+    document.createElement("strong");
+
+  title.textContent =
+    role;
+
+  const body =
+    document.createElement("div");
+
+  body.textContent =
+    text;
+
+  message.appendChild(title);
+
+  message.appendChild(body);
+
+  $("messages")
+    .appendChild(message);
+
+  message.scrollIntoView({
+    block: "nearest"
+  });
+
+}
+
+function setupDictation() {
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+
+    $("dictate").disabled = true;
+
+    announce(
+      "voice-status",
+      "Browser speech recognition is unavailable. Use Safari keyboard Dictation."
+    );
+
+    return;
+
+  }
+
+  recognition =
+    new SpeechRecognition();
+
+  recognition.lang =
+    "en-US";
+
+  recognition.continuous =
+    true;
+
+  recognition.interimResults =
+    true;
+
+  recognition.maxAlternatives =
+    1;
+
+  recognition.onstart =
+    function() {
+
+      dictating = true;
+
+      $("dictate")
+        .setAttribute(
+          "aria-pressed",
+          "true"
+        );
+
+      $("dictate").textContent =
+        "Dictation Running";
+
+      $("stop-dictation").disabled =
+        false;
+
+      announce(
+        "voice-status",
+        "Dictation started. Speak your idea."
+      );
+
+    };
+
+  recognition.onresult =
+    function(event) {
+
+      let finalText = "";
+      let interimText = "";
+
+      for (
+        let i = event.resultIndex;
+        i < event.results.length;
+        i++
+      ) {
+
+        const transcript =
+          event.results[i][0]
+            .transcript;
+
+        if (
+          event.results[i].isFinal
+        ) {
+
+          finalText +=
+            transcript;
+
+        } else {
+
+          interimText +=
+            transcript;
+
+        }
+
+      }
+
+      if (finalText) {
+
+        const current =
+          $("prompt")
+            .value
+            .trim();
+
+        $("prompt").value =
+          current
+            ? current + " " + finalText
+            : finalText;
+
+      }
+
+      announce(
+        "voice-status",
+        interimText
+          ? "Listening: " + interimText
+          : "Dictation received."
+      );
+
+    };
+
+  recognition.onerror =
+    function(event) {
+
+      announce(
+        "voice-status",
+        "Dictation error: " +
+        event.error
+      );
+
+      stopDictation();
+
+    };
+
+  recognition.onend =
+    function() {
+
+      if (dictating) {
+
+        dictating = false;
+
+        $("dictate")
+          .setAttribute(
+            "aria-pressed",
+            "false"
+          );
+
+        $("dictate").textContent =
+          "Start Dictation";
+
+        $("stop-dictation").disabled =
+          true;
+
+        announce(
+          "voice-status",
+          "Dictation stopped."
+        );
+
+      }
+
+    };
+
+}
+
+function stopDictation() {
+
+  dictating = false;
+
+  if (recognition) {
+
+    try {
+      recognition.stop();
+    } catch (error) {}
+
+  }
+
+  $("dictate")
+    .setAttribute(
+      "aria-pressed",
+      "false"
+    );
+
+  $("dictate").textContent =
+    "Start Dictation";
+
+  $("stop-dictation").disabled =
+    true;
+
+  announce(
+    "voice-status",
+    "Dictation stopped."
+  );
+
+}
+
+$("dictate").addEventListener(
+  "click",
+  function() {
+
+    if (!recognition) {
+      setupDictation();
+    }
+
+    if (
+      recognition &&
+      !dictating
+    ) {
+
+      try {
+
+        recognition.start();
+
+      } catch (error) {
+
+        announce(
+          "voice-status",
+          "Dictation could not start. Use Safari keyboard Dictation."
+        );
+
+      }
+
+    }
+
+  }
+);
+
+$("stop-dictation")
+  .addEventListener(
+    "click",
+    stopDictation
+  );
+
+setupDictation();
+
+$("debug-run").addEventListener(
+  "click",
+  function() {
+
+    saveFile();
+
+    latestError = "";
+
+    try {
+
+      $("preview").srcdoc =
+        buildDocument();
+
+      $("debug-output")
+        .innerHTML =
+        '<p class="success"><strong>Run completed.</strong> No synchronous error was detected.</p>';
+
+    } catch (error) {
+
+      latestError =
+        error.message;
+
+      $("debug-output")
+        .innerHTML =
+        '<p class="error"><strong>Error:</strong> ' +
+        error.message.replace(
+          /[<>]/g,
+          ""
+        ) +
+        "</p>";
+
+    }
+
+  }
+);
+
+$("debug-explain")
+  .addEventListener(
+    "click",
+    function() {
+
+      if (!latestError) {
+
+        $("debug-output")
+          .innerHTML =
+          "<p>No captured error yet. Run the project first.</p>";
+
+        return;
+
+      }
+
+      $("debug-output")
+        .innerHTML =
+        "<p><strong>Explanation</strong></p>" +
+        "<p>" +
+        latestError.replace(
+          /[<>]/g,
+          ""
+        ) +
+        "</p>";
+
+    }
+  );
+
+$("debug-fix")
+  .addEventListener(
+    "click",
+    function() {
+
+      addMessage(
+        "AbleCode AI",
+        "Review the latest error and propose a minimal code change."
+      );
+
+      location.hash =
+        "ai";
+
+      showView("ai");
+
+    }
+  );
+
+loadFile(
+  "index.html"
+);
+
+runPreview();
+
+</script>
+
+</body>
+</html>
