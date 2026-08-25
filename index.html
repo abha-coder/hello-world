@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>AbleCode AI — MVP</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:light dark;
+      --bg:#0b1020;--panel:#121a2b;--panel2:#182238;--text:#f5f7fb;--muted:#b8c2d6;--accent:#8ab4ff;
+      --border:#34415c;--focus:#ffd166;--danger:#ff8a8a;--success:#8fe3b0}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);line-height:1.5}
+    button,input,textarea,select{font:inherit} button{background:var(--panel2);color:var(--text);border:1px solid var(--border);
+      border-radius:10px;padding:.65rem .85rem;cursor:pointer}
+    button:hover{filter:brightness(1.12)} button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,
+    [tabindex]:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+    header{padding:1rem;border-bottom:1px solid var(--border);background:var(--panel)}
+    h1{font-size:1.25rem;margin:0}.tagline{color:var(--muted);margin:.2rem 0 0}
+    nav{display:flex;gap:.5rem;padding:.75rem 1rem;background:var(--panel);border-bottom:1px solid var(--border);overflow:auto}
+    .nav-link{display:inline-block;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:.65rem .85rem;text-decoration:none}.nav-link[aria-current="page"]{background:var(--accent);color:#061126}
+    main{max-width:1200px;margin:auto;padding:1rem}.view[hidden]{display:none}
+    .grid{display:grid;grid-template-columns:minmax(170px,250px) 1fr;gap:1rem}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1rem}
+    .files button{display:block;width:100%;text-align:left;margin:.35rem 0}.files button[aria-current="true"]{border-color:var(--accent)}
+    textarea#code{width:100%;min-height:420px;background:#070b14;color:#f8fafc;border:1px solid var(--border);border-radius:10px;
+      padding:1rem;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92rem;line-height:1.55;resize:vertical}
+    textarea{width:100%;background:#070b14;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:.85rem}
+    .toolbar{display:flex;flex-wrap:wrap;gap:.5rem;margin:.75rem 0}.status{min-height:1.5em;color:var(--muted)}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.messages{min-height:280px;max-height:480px;overflow:auto}
+    .message{padding:.8rem;border-bottom:1px solid var(--border)}.message strong{display:block;margin-bottom:.25rem}
+    pre{white-space:pre-wrap;word-break:break-word;background:#070b14;border:1px solid var(--border);padding:1rem;border-radius:10px;overflow:auto}
+    iframe{width:100%;min-height:360px;border:1px solid var(--border);border-radius:10px;background:white}
+    .error{color:var(--danger)}.success{color:var(--success)}.muted{color:var(--muted)}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media(max-width:750px){.grid,.two{grid-template-columns:1fr}main{padding:.7rem}textarea#code{min-height:320px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<header>
+  <h1>AbleCode AI</h1>
+  <p class="tagline">Build software. Accessibility built in.</p>
+</header>
+
+<nav aria-label="Primary navigation">
+  <a class="nav-link" href="#code" data-view="code" aria-current="page">Code View</a>
+  <a class="nav-link" href="#ai" data-view="ai">AI View</a>
+  <a class="nav-link" href="#debug" data-view="debug">Debugger</a>
+</nav>
+
+<main>
+  <section id="view-code" class="view" aria-labelledby="code-heading">
+    <h2 id="code-heading">Code View</h2>
+    <div class="grid">
+      <aside class="card files" aria-labelledby="files-heading">
+        <h3 id="files-heading">Project files</h3>
+        <button class="file-btn" data-file="index.html" aria-current="true">index.html</button>
+        <button class="file-btn" data-file="app.js" aria-current="false">app.js</button>
+        <button class="file-btn" data-file="styles.css" aria-current="false">styles.css</button>
+        <button id="new-file">New file</button>
+      </aside>
+      <div class="card">
+        <label for="code"><strong id="current-file">index.html</strong> editor</label>
+        <textarea id="code" spellcheck="false" aria-describedby="editor-help"></textarea>
+        <p id="editor-help" class="muted">Edit code directly, then use Run to preview it. This MVP uses a simple accessible text editor so it works well with VoiceOver.</p>
+        <div class="toolbar">
+          <button id="save">Save</button>
+          <button id="run">Run preview</button>
+          <button id="copy">Copy code</button>
+          <button id="download">Download file</button>
+          <button id="send-ai">Send to AI</button>
+        </div>
+        <p id="code-status" class="status" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <h3>Live preview</h3>
+      <iframe id="preview" title="Live application preview" sandbox="allow-scripts"></iframe>
+    </div>
+  </section>
+
+  <section id="view-ai" class="view" hidden aria-labelledby="ai-heading">
+    <h2 id="ai-heading">AI View</h2>
+    <div class="two">
+      <div class="card">
+        <label for="prompt"><strong>Tell AbleCode what to build or change</strong></label>
+        <textarea id="prompt" rows="8" placeholder="Example: Create an accessible login form with email, password, validation and a show-password button."></textarea>
+        <div class="toolbar">
+          <button id="generate">Generate accessible code</button>
+          <button id="explain">Explain current code</button>
+          <button id="clear-chat">Clear conversation</button>
+        </div>
+        <p id="ai-status" class="status" role="status" aria-live="polite"></p>
+      </div>
+      <div class="card">
+        <h3>Conversation</h3>
+        <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-debug" class="view" hidden aria-labelledby="debug-heading">
+    <h2 id="debug-heading">Debugger</h2>
+    <div class="card">
+      <p>Run the current project, then inspect runtime errors here.</p>
+      <div class="toolbar">
+        <button id="debug-run">Run and capture errors</button>
+        <button id="debug-explain">Explain latest error</button>
+        <button id="debug-fix">Generate fix</button>
+      </div>
+      <div id="debug-output" role="region" aria-label="Debugger output" aria-live="polite"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const files = {
+  "index.html": `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Accessible App</title></head>
+<body>
+  <main>
+    <h1>My Accessible App</h1>
+    <p>Start building here.</p>
+    <button type="button" id="hello">Say hello</button>
+    <p id="message" role="status" aria-live="polite"></p>
+  </main>
+  <script src="app.js"><\/script>
+</body>
+</html>`,
+  "app.js": `document.getElementById('hello').addEventListener('click', () => {
+  document.getElementById('message').textContent = 'Hello from AbleCode AI!';
+});`,
+  "styles.css": `body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.5; }`
+};
+let currentFile = "index.html";
+let latestError = "";
+
+const $ = id => document.getElementById(id);
+const editor = $("code");
+
+function announce(id, text){ $(id).textContent = text; }
+function loadFile(name){
+  currentFile=name; $("current-file").textContent=name; editor.value=files[name];
+  document.querySelectorAll(".file-btn").forEach(b=>b.setAttribute("aria-current",String(b.dataset.file===name)));
+  editor.focus();
+}
+function saveFile(){ files[currentFile]=editor.value; announce("code-status", `${currentFile} saved.`); }
+function buildDocument(){
+  files["index.html"]=editor.value;
+  let html=files["index.html"];
+  const css=files["styles.css"];
+  const js=files["app.js"];
+  if(!html.includes("styles.css") && css.trim()) html=html.replace("</head>", `<style>${css}</style></head>`);
+  if(!html.includes("app.js") && js.trim()) html=html.replace("</body>", `<script>${js}<\/script></body>`);
+  return html;
+}
+function runPreview(){
+  saveFile(); latestError="";
+  $("preview").srcdoc=buildDocument();
+  announce("code-status","Preview updated.");
+}
+function addMessage(role,text){
+  const div=document.createElement("div"); div.className="message";
+  const strong=document.createElement("strong"); strong.textContent=role;
+  const body=document.createElement("div"); body.textContent=text;
+  div.append(strong,body); $("messages").appendChild(div);
+  div.scrollIntoView({block:"nearest"});
+}
+function accessibleTemplate(prompt){
+  const p=prompt.toLowerCase();
+  if(p.includes("login") || p.includes("sign in")){
+    return `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Accessible Login</title></head>
+<body>
+<main>
+<h1>Sign in</h1>
+<form id="login-form" novalidate>
+  <div><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required aria-describedby="email-error"><p id="email-error"></p></div>
+  <div><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>
+  <button type="submit">Sign in</button>
+  <p id="form-message" role="status" aria-live="polite"></p>
+</form>
+</main>
+<script>
+const form=document.getElementById('login-form');
+form.addEventListener('submit',e=>{
+ e.preventDefault();
+ const email=document.getElementById('email'), err=document.getElementById('email-error'), msg=document.getElementById('form-message');
+ err.textContent='';
+ if(!email.validity.valid){err.textContent='Enter a valid email address.'; email.focus(); return;}
+ msg.textContent='Sign-in submitted.';
+});
+<\/script>
+</body></html>`;
+  }
+  return `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Accessible App</title></head>
+<body>
+<main>
+<h1>Accessible feature</h1>
+<p>${prompt.replace(/[<>]/g,"")}</p>
+<button type="button">Primary action</button>
+<p role="status" aria-live="polite"></p>
+</main>
+</body></html>`;
+}
+function explainCode(){
+  addMessage("AbleCode AI","This MVP generates semantic HTML, labels form controls, uses live regions for status messages, and keeps interactions keyboard operable. It is designed so the editor itself has a logical VoiceOver reading order.");
+}
+$("generate").onclick=()=>{
+  const prompt=$("prompt").value.trim();
+  if(!prompt){announce("ai-status","Enter an idea first."); $("prompt").focus(); return;}
+  files["index.html"]=accessibleTemplate(prompt); loadFile("index.html"); runPreview();
+  addMessage("You",prompt);
+  addMessage("AbleCode AI","I generated an accessibility-first HTML prototype. Open Code View to edit it, or Debugger to run and inspect it.");
+  announce("ai-status","Accessible code generated and opened in Code View.");
+};
+$("explain").onclick=explainCode;
+$("clear-chat").onclick=()=>{$("messages").replaceChildren();announce("ai-status","Conversation cleared.");};
+$("save").onclick=saveFile; $("run").onclick=runPreview;
+$("copy").onclick=async()=>{await navigator.clipboard?.writeText(editor.value);announce("code-status","Code copied.");};
+$("download").onclick=()=>{
+  const blob=new Blob([editor.value],{type:"text/plain"}), a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download=currentFile;a.click();URL.revokeObjectURL(a.href);
+};
+$("send-ai").onclick=()=>{ $("prompt").value=`Help me improve this ${currentFile} while preserving accessibility.`; location.hash="ai"; showView("ai",true); $("prompt").focus(); };
+$("new-file").onclick=()=>{
+  const name=prompt("New file name, for example component.html:");
+  if(name && !files[name]){files[name]="";const b=document.createElement("button");b.className="file-btn";b.dataset.file=name;b.textContent=name;b.setAttribute("aria-current","false");b.onclick=()=>loadFile(name);document.querySelector(".files").insertBefore(b,$("new-file"));loadFile(name);}
+};
+document.querySelectorAll(".file-btn").forEach(b=>b.onclick=()=>loadFile(b.dataset.file));
+function showView(view, moveFocus=false){
+  if(!["code","ai","debug"].includes(view)) view="code";
+  document.querySelectorAll(".view").forEach(v=>v.hidden=true);
+  $(`view-${view}`).hidden=false;
+  document.querySelectorAll(".nav-link").forEach(n=>n.setAttribute("aria-current",String(n.dataset.view===view)));
+  if(moveFocus){ const heading=$(`#${view==="code"?"code-heading":view==="ai"?"ai-heading":"debug-heading"}`); heading.setAttribute("tabindex","-1"); heading.focus(); }
+}
+function syncViewFromHash(){ showView((location.hash||"#code").slice(1),false); }
+document.querySelectorAll(".nav-link").forEach(link=>link.addEventListener("click",()=>showView(link.dataset.view,true)));
+window.addEventListener("hashchange",syncViewFromHash);
+syncViewFromHash();
+$("debug-run").onclick=()=>{
+  saveFile(); latestError="";
+  try{
+    const src=buildDocument();
+    if(src.includes("undefinedVariableForDemo")) throw new Error("ReferenceError: undefinedVariableForDemo is not defined");
+    $("preview").srcdoc=src;
+    $("debug-output").innerHTML='<p class="success"><strong>Run completed.</strong> No synchronous build error was detected by this MVP.</p>';
+  }catch(e){latestError=e.message;$("debug-output").innerHTML=`<p class="error"><strong>Error:</strong> ${e.message}</p>`;}
+};
+$("debug-explain").onclick=()=>{
+  if(!latestError){$("debug-output").innerHTML='<p>No captured error yet. Run the project first.</p>';return;}
+  $("debug-output").innerHTML=`<p><strong>Explanation</strong></p><p>${latestError.replace(/[<>]/g,"")}.</p><p>The debugger can propose a fix, but review changes before applying them.</p>`;
+};
+$("debug-fix").onclick=()=>{
+  if(!latestError){$("debug-output").innerHTML='<p>No captured error to fix.</p>';return;}
+  addMessage("AbleCode AI","I would inspect the failing line, identify the undefined reference, and propose a minimal patch. Review the diff before applying it.");
+  location.hash="ai"; showView("ai",true);
+};
+loadFile("index.html"); runPreview();
+</script>
+</body>
+</html>
